@@ -4,6 +4,8 @@ import logging
 import sys
 import re
 from datetime import datetime
+pythonfrom dotenv import load_dotenv
+from os import getenv
 
 from aiogram import Bot, Dispatcher, html
 from aiogram.client.default import DefaultBotProperties
@@ -18,8 +20,8 @@ from db import init_db, set_budget, get_budget, add_expense, get_total_spent
 
 
 # ==================== SETTINGS ====================
-TOKEN = "8944067333:AAH49p9yVwHORQzxQk7gCZtPnGf-LJc3Dvg"
-
+load_dotenv()
+TOKEN = getenv("TOKEN")
 dp = Dispatcher(storage=MemoryStorage())
 
 
@@ -104,6 +106,10 @@ async def expense_handler(message: Message):
     if match:
         amount = float(match.group(1))
         category = match.group(2)
+
+        budget = get_budget(message.from_user.id)
+        currency = budget[3] if budget else ""
+
         add_expense(
             user_id=message.from_user.id,
             amount=amount,
@@ -112,7 +118,7 @@ async def expense_handler(message: Message):
         )
         await message.answer(f"Logged: {amount}{currency} for {category}")
     else:
-        await message.answer(f"Didn't get that. Send an amount and what you spent on, e.g.: 5{currency} coffee")
+        await message.answer(f"Didn't get that. Send an amount and what you spent on, e.g.: 50 coffee")
 
 
 # ==================== BOT STARTUP ====================
